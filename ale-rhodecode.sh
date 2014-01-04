@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ### BEGIN INIT INFO
 # Provides: rhodecode
@@ -90,3 +90,48 @@ stop_rhodecode() {
     echo "$RHODECODE_PID_FILE does not exist. Need to be running for closing."
   fi
 }
+
+case "$1" in
+  start)
+    echo "Starting Celery"
+    start_celery
+    echo "Starting RhodeCode"
+    start_rhodecode
+    ;;
+  start_celery)
+    echo "Starting Celery"
+    start_celery
+    ;;
+  start_rhodecode)
+    echo "Starting RhodeCode"
+    start_rhodecode
+  ;;
+  stop)
+    echo "Stopping RhodeCode"
+    stop_rhodecode
+    echo "Stopping Celery"
+    stop_celery
+    ;;
+  stop_rhodecode)
+    echo "Stopping RhodeCode"
+    stop_rhodecode
+    ;;
+  stop_celery)
+    echo "Stopping Celery"
+    stop_celery
+    ;;
+  restart)
+    echo "Stopping RhodeCode and Celery"
+    stop
+    echo "Starting Celery"
+    start_celery
+    echo "Starting RhodeCode"
+    start_rhodecode
+    ;;
+  *)
+    echo "Usage: ./rhodecode {start|stop|restart|start_celery|stop_celery|start_rhodecode|stop_rhodecode}"
+    exit 2
+    ;;
+esac
+
+exit 0
