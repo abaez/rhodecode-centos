@@ -45,7 +45,7 @@ start_celery() {
 
 start_rhodecode() {
   if [[ ! -f $RHODECODE_PID_FILE ]]; then
-    su -c "$RHODECODE_ARGS --daemon --user=$USER --pidfile=$RHODECODE_PID_FILE --log-file=$RHODECODE_LOG_FILE" $USER
+    su -c "$RHODECODE_ARGS --daemon --user=$USER --pid-file=$RHODECODE_PID_FILE --log-file=$RHODECODE_LOG_FILE" $USER
     # check to make sure it's running
     while [[ ! -f $RHODECODE_PID_FILE ]]; do
       sleep 1 && echo ".";
