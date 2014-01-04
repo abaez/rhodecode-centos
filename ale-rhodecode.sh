@@ -45,7 +45,7 @@ start_celery() {
 
 start_rhodecode() {
   if [[ ! -f $RHODECODE_PID_FILE ]]; then
-    su -c "$RHODECODE_ARGS --pidfile=$RHODECODE_PID_FILE -f $RHODECODE_LOG_FILE -l WARNING -q &" $USER
+    su -c "$RHODECODE_ARGS --daemon --user=$USER --pidfile=$RHODECODE_PID_FILE --log-file=$RHODECODE_LOG_FILE" $USER
     # check to make sure it's running
     while [[ ! -f $RHODECODE_PID_FILE ]]; do
       sleep 1 && echo ".";
@@ -76,7 +76,8 @@ stop_celery() {
 
 stop_rhodecode() {
   if [[ -f $RHODECODE_PID_FILE ]]; then
-    su -c "kill -s SIGINT $(cat $RHODECODE_PID_FILE)" $USER
+
+    su -c "$VENV_DIR/bin/paster serve --stop-daemon --pid-file=$RHODECODE_PID_FILE" $USER
   
     echo "waiting for process to die..."
     while [[ -f $RHODECODE_PID_FILE ]]; do
