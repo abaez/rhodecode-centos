@@ -18,11 +18,11 @@ DATA_DIR=/var/www/rhode/data
 CELERY_ARGS="$VENV_DIR/bin/paster celeryd $DATA_DIR/production.ini"
 RHODECODE_ARGS="$VENV_DIR/bin/paster serve $DATA_DIR/production.ini"
 
-CELERY_PID_FILE=/var/run/celeryd.pid
-RHODECODE_PID_FILE=/var/run/rhodecode.pid
+CELERY_PID_FILE=/var/run/rhodecode/celeryd.pid
+RHODECODE_PID_FILE=/var/run/rhodecode/rhodecode.pid
 
-CELERY_LOG_FILE=/var/log/celeryd_init.log
-RHODECODE_LOG_FILE=/var/log/rhodecode_init.log
+CELERY_LOG_FILE=/var/log/rhodecode/celeryd_init.log
+RHODECODE_LOG_FILE=/var/log/rhodecode/rhodecode_init.log
 
 
 # chkconfig: 345 81 04
@@ -32,7 +32,7 @@ start_celery() {
     # actual cmd of run.
     su -c "$CELERY_ARGS --pidfile=$CELERY_PID_FILE -f $CELERY_LOG_FILE -l WARNING -q &" $USER
     
-    while [[ ! -f CELERY_PID_FILE ]]; do 
+    while [[ ! -f $CELERY_PID_FILE ]]; do 
       sleep 1 && echo ".";
     done
     
@@ -47,7 +47,7 @@ start_rhodecode() {
   if [[ ! -f $RHODECODE_PID_FILE ]]; then
     su -c "$RHODECODE_ARGS --pidfile=$RHODECODE_PID_FILE -f $RHODECODE_LOG_FILE -l WARNING -q &" $USER
     # check to make sure it's running
-    while [[ ! -f RHODECODE_PID_FILE ]]; do
+    while [[ ! -f $RHODECODE_PID_FILE ]]; do
       sleep 1 && echo ".";
     done
     
@@ -61,8 +61,7 @@ start_rhodecode() {
 
 stop_celery() {
   if [[ -f $CELERY_PID_FILE ]]; then
-    TMP_FILE=$(cat $CELERY_PID_FILE)
-    su -c "kill -s SIGINT $TMP_FILE" $USER
+    su -c "kill -s SIGINT $(cat $CELERY_PID_FILE)" $USER
   
     echo "waiting for process to die..."
     while [[ -f $CELERY_PID_FILE ]]; do
@@ -77,8 +76,7 @@ stop_celery() {
 
 stop_rhodecode() {
   if [[ -f $RHODECODE_PID_FILE ]]; then
-    TMP_FILE=$(cat $RHODECODE_PID_FILE)
-    su -c "kill -s SIGINT $TMP_FILE" $USER
+    su -c "kill -s SIGINT $(cat $RHODECODE_PID_FILE)" $USER
   
     echo "waiting for process to die..."
     while [[ -f $RHODECODE_PID_FILE ]]; do
