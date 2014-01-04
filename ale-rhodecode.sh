@@ -28,34 +28,65 @@ RHODECODE_LOG_FILE=/var/log/rhodecode_init.log
 # chkconfig: 345 81 04
 
 start_celery() {
-  if [ ! -f CELERY_PID_FILE ]; then
+  if [ ! -f $CELERY_PID_FILE ]; then
+    # actual cmd of run.
     su -c "$CELERY_ARGS --pidfile=$CELERY_PID_FILE -f $CELERY_LOG_FILE -l WARNING -q &" $USER
-    while [[ ! -f CELEREY_PID_FILE ]]; do
+    
+    while [[ ! -f CELEREY_PID_FILE ]]; do 
       sleep 1 && echo ".";
     done
+    
     echo "Done. PID is $(cat $CELERY_PID_FILE)."
   else
-    echo "The celeryd paste script has filed a paste PID $(cat $CELERY_PID_FILE)"
+    echo "The celery part has filed a PID $(cat $CELERY_PID_FILE)"
     echo "It's likely started already at that PID."
   fi
 }
 
 start_rhodecode() {
-  if [[ ! -f RHODECODE_PID_FILE ]]; then
-    su -c "$RHODECODE_ARGS --pidfile=$RHODECODE_PID_FILE -f RHODECODE_LOG_FILE -l WARNING -q &" $USER
+  if [[ ! -f $RHODECODE_PID_FILE ]]; then
+    su -c "$RHODECODE_ARGS --pidfile=$RHODECODE_PID_FILE -f $RHODECODE_LOG_FILE -l WARNING -q &" $USER
+    # check to make sure it's running
     while [[ ! -f RHODECODE_PID_FILE ]]; do
       sleep 1 && echo ".";
     done
-    echo "Done. PID is $(cat $CELERY_PID_FILE)."
+    
+    echo "Done. PID is $(cat $RHODECODE_PID_FILE)."
   else
-    echo "The celeryd paste script has filed a paste PID $(cat $RHODECODE_PID_FILE)"
+    echo "The rhodecode script has filed a PID $(cat $RHODECODE_PID_FILE)"
     echo "It's likely started already at that PID."
   fi
 }
 
 
 stop_celery() {
-  if [[ -f CELEREY_PID_FILE ]]; then
+  if [[ -f $CELEREY_PID_FILE ]]; then
+    TMP_FILE=$(cat $CELEREY_PID_FILE)
+    su -c "kill -s SIGINT $TMP_FILE" $USER
+  
+    echo "waiting for process to die..."
+    while [[ -f $CELEREY_PID_FILE ]]; do
+      sleep 1 && echo ".";
+    done
+    
+    echo "Closed celery."
+  else
+    echo "$CELEREY_PID_FILE does not exist. Need to be running for closing."
+  fi
+}
 
+stop_rhodecode() {
+  if [[ -f $RHODECODE_PID_FILE ]]; then
+    TMP_FILE=$(cat $RHODECODE_PID_FILE)
+    su -c "kill -s SIGINT $TMP_FILE" $USER
+  
+    echo "waiting for process to die..."
+    while [[ -f $RHODECODE_PID_FILE ]]; do
+      sleep 1 && echo ".";
+    done
+    
+    echo "Closed rhodecode."
+  else
+    echo "$RHODECODE_PID_FILE does not exist. Need to be running for closing."
   fi
 }
