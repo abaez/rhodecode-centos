@@ -32,7 +32,7 @@ start_celery() {
     # actual cmd of run.
     su -c "$CELERY_ARGS --pidfile=$CELERY_PID_FILE -f $CELERY_LOG_FILE -l WARNING -q &" $USER
     
-    while [[ ! -f CELEREY_PID_FILE ]]; do 
+    while [[ ! -f CELERY_PID_FILE ]]; do 
       sleep 1 && echo ".";
     done
     
@@ -60,18 +60,18 @@ start_rhodecode() {
 
 
 stop_celery() {
-  if [[ -f $CELEREY_PID_FILE ]]; then
-    TMP_FILE=$(cat $CELEREY_PID_FILE)
+  if [[ -f $CELERY_PID_FILE ]]; then
+    TMP_FILE=$(cat $CELERY_PID_FILE)
     su -c "kill -s SIGINT $TMP_FILE" $USER
   
     echo "waiting for process to die..."
-    while [[ -f $CELEREY_PID_FILE ]]; do
+    while [[ -f $CELERY_PID_FILE ]]; do
       sleep 1 && echo ".";
     done
     
     echo "Closed celery."
   else
-    echo "$CELEREY_PID_FILE does not exist. Need to be running for closing."
+    echo "$CELERY_PID_FILE does not exist. Need to be running for closing."
   fi
 }
 
@@ -105,7 +105,7 @@ case "$1" in
   start_rhodecode)
     echo "Starting RhodeCode"
     start_rhodecode
-  ;;
+    ;;
   stop)
     echo "Stopping RhodeCode"
     stop_rhodecode
