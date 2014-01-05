@@ -24,13 +24,13 @@ fi
 
 dependencies_install() {
   yum -y update; 
-  yum -y install vim nano git mercurial svn ntp openssh-clients wget gcc make python-devel sqlite
+  yum -y install vim nano git mercurial svn ntp openssh-clients wget gcc make python-devel
   
   # installs epel 6.8 repo
   rpm -Uvh http://mirror.itc.virginia.edu/fedora-epel/6/i386/epel-release-6-8.noarch.rpm
   
   yum -y update
-  yum -y install erlang openldap openldap-clients openldap-devel openssl-devel ruby rubygems rubygem-passenger rubygem-passenger-native  rubygem-rake ruby-rdoc ruby-devel ruby-RMagick
+  yum -y install erlang sqlite sqlite-devel openldap openldap-clients openldap-devel openssl-devel ruby rubygems rubygem-passenger rubygem-passenger-native  rubygem-rake ruby-rdoc ruby-devel ruby-RMagick
 }
 
 
@@ -107,6 +107,8 @@ rhodecode_boot() {
 redmine_install() {
   gem update 
   gem install bundler
+  gem install rack
+  gem install sqlite3
   bundle install
   gem install rails -V
   
@@ -119,6 +121,7 @@ redmine_install() {
     adapter:sqlite3
     dbfile: db/redmine.db
   EOF
+  
   rake db:migrate RAILS_ENV="production" 
   rake redmine:load_default_data RAILS_ENV="production"
     
