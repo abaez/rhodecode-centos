@@ -25,7 +25,6 @@ CELERY_LOG_FILE=/var/log/rhodecode/celeryd_init.log
 RHODECODE_LOG_FILE=/var/log/rhodecode/rhodecode_init.log
 
 
-# chkconfig: 345 81 04
 
 start_celery() {
   if [ ! -f $CELERY_PID_FILE ]; then
