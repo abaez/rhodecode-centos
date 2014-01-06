@@ -30,7 +30,10 @@ dependencies_install() {
   rpm -Uvh http://mirror.itc.virginia.edu/fedora-epel/6/i386/epel-release-6-8.noarch.rpm
 
   yum -y update
-  yum -y install erlang sqlite sqlite-devel openldap openldap-clients openldap-devel openssl-devel ruby rubygems rubygem-passenger rubygem-passenger-native  rubygem-rake ruby-rdoc ruby-devel ruby-RMagick
+  yum -y install erlang sqlite sqlite-devel openldap openldap-clients openldap-devel openssl-devel
+
+  # ruby stuff
+  yum -y install ruby rubygems rubygem-passenger rubygem-passenger-native  rubygem-rake ruby-rdoc ruby-devel ImageMagick-devel
 }
 
 
@@ -105,16 +108,11 @@ rhodecode_boot() {
 }
 
 redmine_install() {
-  gem update
-  gem install bundler
-  gem install rack
-  gem install sqlite3
-  bundle install
-  gem install rails -V
 
   cd /var/www
   svn co http://svn.redmine.org/redmine/branches/2.4-stable redmine
   cd redmine
+
 
   cat database.yml << EOF
   production:
@@ -122,9 +120,27 @@ redmine_install() {
     dbfile: db/redmine.db
   EOF
 
+  gem update
+  gem install rack
+  gem install bundler
+
+  bundle install
+  gem install sqlite3
+
   rake db:migrate RAILS_ENV="production"
   rake redmine:load_default_data RAILS_ENV="production"
 
+  cd public
+  cp dispatch.fcgi.example dispatch.fcgi
+  cp htaccess.fcgi.example .htaccess
+
+  cd /var/www
+  chown -R apache:apache redmine
+  chmod -R 755 redmine
+}
 
 
+apache_setup() {
+  cp redmine.conf /etc/init.d/httpd/conf.d
+  cp rhodecode.conf /etc/init.d/httpd/conf.d
 }
