@@ -6,7 +6,7 @@ RHODE_VENV=$RHODE_ROOT/venv
 
 
 # Quick and dirty install
-if [ $(whoami) == "root" ]; then
+if [ $(whoami) != "root" ]; then
   echo "need to run as root."
   exit 2
 else
@@ -14,7 +14,7 @@ else
   cp ./ale-rhodecode.sh ~/tmp/ale-rhodecode.sh
   cd ~/tmp
 
-  dependencies
+  dependencies_install
   rabbitmq_install
   virtualenv_install
 
@@ -33,7 +33,7 @@ dependencies_install() {
   yum -y install erlang sqlite sqlite-devel openldap openldap-clients openldap-devel openssl-devel
 
   # ruby stuff
-  yum -y install ruby rubygems rubygem-passenger rubygem-passenger-native  rubygem-rake ruby-rdoc ruby-devel ImageMagick-devel
+  yum -y install ruby rubygems rubygem-passenger rubygem-passenger-native mod_passenger  rubygem-rake ruby-rdoc ruby-devel ImageMagick-devel
 }
 
 
@@ -59,13 +59,14 @@ virtualenv_install() {
   wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
   wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py -O- | python
 
-  easy_install virtualenv virtualenvwrapper
+  pip install virtualenv virtualenvwrapper
 
   mkdir -p $RHODE_VENV
   virtualenv --no-site-packages $RHODE_VENV
 }
 
 rhodecode_install() {
+
   mkdir $RHODE_ROOT/data $RHODE_ROOT/repos /var/run/rhodecode /var/log/rhodecode
   cd $RHODE_ROOT/data
   source $RHODE_VENV/bin/activate
@@ -114,14 +115,15 @@ redmine_install() {
   cd redmine
 
 
-  cat database.yml << EOF
+  cat >> database.yml << EOF
   production:
     adapter:sqlite3
     dbfile: db/redmine.db
-  EOF
+EOF
 
   gem update
   gem install rack
+  gem install passenger
   gem install bundler
 
   bundle install
@@ -143,4 +145,12 @@ redmine_install() {
 apache_setup() {
   cp redmine.conf /etc/init.d/httpd/conf.d
   cp rhodecode.conf /etc/init.d/httpd/conf.d
+  setsebool -P httpd_can_network_connect 1
+
+  cat >> /etc/httpd/conf/httpd.conf << EOF
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+EOF
+
 }
