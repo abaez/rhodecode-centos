@@ -1,26 +1,9 @@
 #!/bin/bash
 
 RHODE_ROOT=/var/www/rhode
-
 RHODE_VENV=$RHODE_ROOT/venv
 
-
-# Quick and dirty install
-if [ $(whoami) != "root" ]; then
-  echo "need to run as root."
-  exit 2
-else
-  mkdir ~/tmp
-  cp ./ale-rhodecode.sh ~/tmp/ale-rhodecode.sh
-  cd ~/tmp
-
-  dependencies_install
-  rabbitmq_install
-  virtualenv_install
-
-  rhodecode_install
-  rhodecode_boot
-fi
+REPO=$(pwd)
 
 dependencies_install() {
   yum -y update;
@@ -35,7 +18,6 @@ dependencies_install() {
   # ruby stuff
   yum -y install ruby rubygems rubygem-passenger rubygem-passenger-native mod_passenger  rubygem-rake ruby-rdoc ruby-devel ImageMagick-devel
 }
-
 
 rabbitmq_install() {
   rpm -Uvh http://www.rabbitmq.com/releases/rabbitmq-server/v3.2.2/rabbitmq-server-3.2.2-1.noarch.rpm
@@ -52,7 +34,6 @@ rabbitmq_install() {
 
   service rabbitmq-server stop
 }
-
 
 virtualenv_install() {
   # ez_setup and pip install
@@ -99,9 +80,9 @@ rhodecode_install() {
 rhodecode_boot() {
   adduser rhodecode -U -b $RHODE_ROOT
   chown -R rhodecode:rhodecode $RHODE_ROOT /var/log/rhodecode /var/run/rhodecode
-  cd ~/tmp
+  cd $REPO
   # tmp location of gist for init
-  chmod +rwx ~/tmp/ale-rhodecode.sh
+  chmod +rwx $REPO/ale-rhodecode.sh
 
   cp ./ale-rhodecode.sh /etc/init.d/rhodecode
   chkconfig --add rhodecode
@@ -136,16 +117,14 @@ EOF
   cp dispatch.fcgi.example dispatch.fcgi
   cp htaccess.fcgi.example .htaccess
 
-  cd /var/www
-  chown -R apache:apache redmine
+  chown -R apache:apache /var/www/redmine
   chmod -R 755 redmine
 }
 
-
 apache_setup() {
+  cd $REPO
   cp redmine.conf /etc/init.d/httpd/conf.d
   cp rhodecode.conf /etc/init.d/httpd/conf.d
-  setsebool -P httpd_can_network_connect 1
 
   cat >> /etc/httpd/conf/httpd.conf << EOF
   RewriteEngine On
@@ -153,4 +132,23 @@ apache_setup() {
   RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
 EOF
 
+
+
+  setsebool -P httpd_can_network_connect 1
 }
+
+# Quick and dirty install
+if [ $(whoami) != "root" ]; then
+  echo "need to run as root."
+  exit 2
+else
+  mkdir $REPO/tmp
+  cd $REPO/tmp
+
+  dependencies_install
+  rabbitmq_install
+  virtualenv_install
+
+  rhodecode_install
+  rhodecode_boot
+fi
