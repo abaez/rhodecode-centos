@@ -7,7 +7,7 @@ REPO=$(pwd)
 
 dependencies_install() {
   yum -y update;
-  yum -y install vim nano git mercurial svn ntp openssh-clients wget gcc make python-devel
+  yum -y install vim nano git mercurial svn ntp openssh-clients wget gcc gcc-c++ make python-devel httpd httpd-devel openssl mod_ssl apr-devel apr-util devel curl-devel
 
   # installs epel 6.8 repo
   rpm -Uvh http://mirror.itc.virginia.edu/fedora-epel/6/i386/epel-release-6-8.noarch.rpm
@@ -96,7 +96,7 @@ redmine_install() {
   cd redmine
 
 
-  cat >> database.yml << EOF
+  cat >> ./config/database.yml << EOF
   production:
     adapter:sqlite3
     dbfile: db/redmine.db
@@ -110,8 +110,8 @@ EOF
   bundle install
   gem install sqlite3
 
-  rake db:migrate RAILS_ENV="production"
-  rake redmine:load_default_data RAILS_ENV="production"
+  bundle exec rake db:migrate RAILS_ENV="production"
+  bundle exec rake redmine:load_default_data RAILS_ENV="production"
 
   cd public
   cp dispatch.fcgi.example dispatch.fcgi
@@ -131,10 +131,39 @@ apache_setup() {
   RewriteCond %{HTTPS} off
   RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
 EOF
-
-
-
+  
+  # required for redmine
+  passenger-install-apache2-module
+  
   setsebool -P httpd_can_network_connect 1
+  
+  setenforce Permissive
+  cat > /etc/selinux/config << EOF
+  # This file controls the state of SELinux on the system.
+  # SELINUX= can take one of these three values:
+  #     enforcing - SELinux security policy is enforced.
+  #     permissive - SELinux prints warnings instead of enforcing.
+  #     disabled - No SELinux policy is loaded.
+  SELINUX=permissive
+  # SELINUXTYPE= can take one of these two values:
+  #     targeted - Targeted processes are protected,
+  #     mls - Multi Level Security protection.
+  SELINUXTYPE=targeted
+EOF
+
+  chkconfig --level 345 httpd on
+  service httpd configtest
+  
+}
+
+vifm_install() {
+  cd $REPO/tmp
+  yum install ncurses-devel ncurses
+  wget http://downloads.sourceforge.net/project/vifm/vifm/vifm-0.7.6.tar.bz2?r=http%3A%2F%2Fvifm.sourceforge.net%2Fdownloads.html&ts=1389042330&use_mirror=hivelocity
+  tar xvf vifm*bz2
+  cd vifm 
+  ./configure --prefix=/usr
+  make; make install 
 }
 
 # Quick and dirty install
@@ -151,4 +180,7 @@ else
 
   rhodecode_install
   rhodecode_boot
+  
+  redmine_install
+  
 fi
