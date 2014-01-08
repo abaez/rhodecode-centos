@@ -123,8 +123,8 @@ EOF
 
 apache_setup() {
   cd $REPO
-  cp redmine.conf /etc/init.d/httpd/conf.d
-  cp rhodecode.conf /etc/init.d/httpd/conf.d
+  cp redmine.conf /etc/httpd/conf.d
+  cp rhodecode.conf /etc/httpd/conf.d
 
   cat >> /etc/httpd/conf/httpd.conf << EOF
   NameVirtualHost *:443
@@ -159,17 +159,17 @@ EOF
 
 vifm_install() {
   cd $REPO/tmp
-  yum install ncurses-devel ncurses
+  yum install -y ncurses-devel ncurses
   wget http://downloads.sourceforge.net/project/vifm/vifm/vifm-0.7.6.tar.bz2?r=http%3A%2F%2Fvifm.sourceforge.net%2Fdownloads.html&ts=1389042330&use_mirror=hivelocity
   tar xvf vifm*bz2
-  cd vifm
+  cd vifm*
   ./configure --prefix=/usr
   make; make install
 }
 
-ssl_setup() {
+#ssl_setup() {
   # NEED to setup for https on redmine and rhodecode
-}
+#}
 
 # Quick and dirty install
 if [ $(whoami) != "root" ]; then
