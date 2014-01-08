@@ -127,16 +127,17 @@ apache_setup() {
   cp rhodecode.conf /etc/init.d/httpd/conf.d
 
   cat >> /etc/httpd/conf/httpd.conf << EOF
+  NameVirtualHost *:443
   RewriteEngine On
   RewriteCond %{HTTPS} off
   RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
 EOF
-  
+
   # required for redmine
   passenger-install-apache2-module
-  
+
   setsebool -P httpd_can_network_connect 1
-  
+
   setenforce Permissive
   cat > /etc/selinux/config << EOF
   # This file controls the state of SELinux on the system.
@@ -153,7 +154,7 @@ EOF
 
   chkconfig --level 345 httpd on
   service httpd configtest
-  
+
 }
 
 vifm_install() {
@@ -161,9 +162,13 @@ vifm_install() {
   yum install ncurses-devel ncurses
   wget http://downloads.sourceforge.net/project/vifm/vifm/vifm-0.7.6.tar.bz2?r=http%3A%2F%2Fvifm.sourceforge.net%2Fdownloads.html&ts=1389042330&use_mirror=hivelocity
   tar xvf vifm*bz2
-  cd vifm 
+  cd vifm
   ./configure --prefix=/usr
-  make; make install 
+  make; make install
+}
+
+ssl_setup() {
+  # NEED to setup for https on redmine and rhodecode
 }
 
 # Quick and dirty install
@@ -175,12 +180,14 @@ else
   cd $REPO/tmp
 
   dependencies_install
+  vifm_install
   rabbitmq_install
   virtualenv_install
 
   rhodecode_install
   rhodecode_boot
-  
+
   redmine_install
-  
+
+  apache_setup
 fi
