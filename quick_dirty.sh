@@ -16,7 +16,7 @@ dependencies_install() {
   yum -y install erlang sqlite sqlite-devel openldap openldap-clients openldap-devel openssl-devel
 
   # ruby stuff
-  yum -y install ruby rubygems rubygem-passenger rubygem-passenger-native mod_passenger  rubygem-rake ruby-rdoc ruby-devel ImageMagick-devel
+  yum -y install ruby rubygems rubygem-passenger rubygem-passenger-native rubygem-rake ruby-rdoc ruby-devel ImageMagick-devel
 }
 
 rabbitmq_install() {
@@ -109,7 +109,8 @@ EOF
 
   bundle install
   gem install sqlite3
-
+  
+  rake generate_secret_token
   bundle exec rake db:migrate RAILS_ENV="production"
   bundle exec rake redmine:load_default_data RAILS_ENV="production"
 
