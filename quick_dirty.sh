@@ -58,7 +58,7 @@ rhodecode_install() {
   ##
   #
   easy_install pastescript
-  easy_install rhodecode
+  pip install https://rhodecode.com/dl/latest
   paster make-config RhodeCode production.ini
 
   # change
@@ -109,7 +109,7 @@ EOF
 
   bundle install
   gem install sqlite3
-  
+
   rake generate_secret_token
   bundle exec rake db:migrate RAILS_ENV="production"
   bundle exec rake redmine:load_default_data RAILS_ENV="production"
