@@ -95,11 +95,11 @@ redmine_install() {
   svn co http://svn.redmine.org/redmine/branches/2.4-stable redmine
   cd redmine
 
-
+  cp ./config/dtabase.yml.example
   cat >> ./config/database.yml << EOF
   production:
-    adapter:sqlite3
-    dbfile: db/redmine.db
+    adapter:  sqlite3
+    database: db/redmine.db
 EOF
 
   gem update
