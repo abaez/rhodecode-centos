@@ -3,7 +3,7 @@
 RHODE_ROOT=/var/www/rhode
 RHODE_VENV=$RHODE_ROOT/venv
 
-BLOOD_ROOT=/VAR/WWW/blood
+BLOOD_ROOT=/var/www/blood
 BLOOD_VENV=$BLOOD_ROOT/venv
 
 REPO=$(pwd)
@@ -16,7 +16,7 @@ dependencies_install() {
   rpm -Uvh http://mirror.itc.virginia.edu/fedora-epel/6/i386/epel-release-6-8.noarch.rpm
 
   yum -y update
-  yum -y install erlang sqlite sqlite-devel openldap openldap-clients openldap-devel openssl-devel
+  yum -y install erlang sqlite sqlite-devel openldap openldap-clients openldap-devel openssl-devel mod_wsgi
 
   # ruby stuff
   yum -y install ruby rubygems rubygem-passenger rubygem-passenger-native rubygem-rake ruby-rdoc ruby-devel ImageMagick-devel
@@ -109,6 +109,7 @@ bloodhound_install() {
     -d sqlite
 
   hg clone http://hg.edgewall.org/trac/mercurial-plugin
+  cd $BLOOD_ROOT/bloodhound/installer/mercurial-plugin
   python setup.py bdist_egg
   python setup.py install
 
