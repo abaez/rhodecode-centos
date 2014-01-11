@@ -3,6 +3,9 @@
 RHODE_ROOT=/var/www/rhode
 RHODE_VENV=$RHODE_ROOT/venv
 
+BLOOD_ROOT=/VAR/WWW/blood
+BLOOD_VENV=$BLOOD_ROOT/venv
+
 REPO=$(pwd)
 
 dependencies_install() {
@@ -87,6 +90,34 @@ rhodecode_boot() {
   cp ./ale-rhodecode.sh /etc/init.d/rhodecode
   chkconfig --add rhodecode
   chkconfig --level 345 rhodecode on
+}
+
+bloodhound_install() {
+  mkdir -p $BLOOD_VENV $BLOOD_ROOT/data
+
+  svn co https://svn.apache.org/repos/asf/bloodhound/trunk/ $BLOOD_ROOT/bloodhound
+
+  virtualenv --no-site-packages $BLOOD_VENV
+
+  cd $BLOOD_ROOT/bloodhound/installer
+  # inside
+  source $BLOOD_VENV/bin/activate
+  pip install -r requirements.txt
+
+  python bloodhound_setup.py \
+    --environments_directory=$BLOOD_ROOT/data \
+    -d sqlite
+
+  hg clone http://hg.edgewall.org/trac/mercurial-plugin
+  python setup.py bdist_egg
+  python setup.py install
+
+  # apache setup
+  trac-admin $BLOOD_ROOT/data/main/ deploy $BLOOD_ROOT/data/site
+
+  deactivate
+
+  cp $REPO/bloodhound.conf /etc/httpd/conf.d/bloodhound.conf
 }
 
 redmine_install() {
