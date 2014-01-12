@@ -112,7 +112,6 @@ bloodhound_install() {
   cd $BLOOD_ROOT/bloodhound/installer/mercurial-plugin
   python setup.py bdist_egg
   python setup.py install
-
   # apache setup
   trac-admin $BLOOD_ROOT/data/main/ deploy $BLOOD_ROOT/data/site
 
